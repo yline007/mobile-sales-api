@@ -28,6 +28,14 @@
 2. 在后续请求中，将token放在请求头中：
    - `Authorization: Bearer {token}`
 
+## 全部API
+
+1. [认证相关接口](auth_api.md)
+2. [仪表盘数据接口](dashboard_api.md)
+3. [手机与品牌接口](phone_api.md)
+4. [文件上传接口](upload_api.md)
+5. [销售员小程序接口](salesperson_api.md)
+
 ## 目录
 
 1. [认证相关接口](./auth_api.md)

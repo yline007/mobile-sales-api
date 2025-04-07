@@ -171,31 +171,36 @@
                     <span>API文档目录</span>
                 </h6>
                 <ul class="nav flex-column">
-                    <li class="nav-item">
+                  <li class="nav-item">
                         <a class="nav-link active" href="#" id="api-main">
                             首页
                         </a>
-                    </li>
-                    <li class="nav-item">
+                  </li>
+                  <li class="nav-item">
                         <a class="nav-link" href="#" id="api-auth">
                             认证相关接口
                         </a>
-                    </li>
-                    <li class="nav-item">
+                  </li>
+                  <li class="nav-item">
                         <a class="nav-link" href="#" id="api-phone">
                             手机相关接口
                         </a>
-                    </li>
-                    <li class="nav-item">
+                  </li>
+                  <li class="nav-item">
                         <a class="nav-link" href="#" id="api-dashboard">
                             仪表盘相关接口
                         </a>
-                    </li>
-                    <li class="nav-item">
+                  </li>
+                  <li class="nav-item">
                         <a class="nav-link" href="#" id="api-upload">
                             文件上传相关接口
                         </a>
-                    </li>
+                  </li>
+                  <li class="nav-item">
+                        <a class="nav-link" href="#" id="api-salesperson">
+                            销售员小程序接口
+                        </a>
+                  </li>
                 </ul>
             </div>
         </nav>
@@ -265,6 +270,12 @@
                 e.preventDefault();
                 setActive(this);
                 loadDoc('upload_api.md');
+            });
+            
+            document.getElementById('api-salesperson').addEventListener('click', function(e) {
+                e.preventDefault();
+                setActive(this);
+                loadDoc('salesperson_api.md');
             });
         });
 
