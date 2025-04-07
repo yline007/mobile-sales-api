@@ -8,29 +8,36 @@ use think\Validate;
 class Salesperson extends Validate
 {
     protected $rule = [
-        'name'        => 'require|length:2,50',
-        'phone'       => 'require|mobile',
-        'store_id'    => 'require|number',
-        'employee_id' => 'length:4,50|alphaNum',
-        'status'      => 'require|in:0,1',
+        'name' => 'require|length:2,50',
+        'phone' => 'require|mobile|unique:salesperson',
+        'password' => 'require|length:6,20',
+        'store_id' => 'number',
+        'employee_id' => 'max:50',
+        'code' => 'length:32',
+        'old_password' => 'require|length:6,20',
+        'new_password' => 'require|length:6,20',
     ];
 
     protected $message = [
-        'name.require' => '销售员姓名不能为空',
-        'name.length' => '销售员姓名长度必须在2-50个字符之间',
-        'phone.require' => '联系电话不能为空',
-        'phone.mobile' => '联系电话格式不正确',
-        'store_id.require' => '所属门店不能为空',
-        'store_id.number' => '所属门店ID必须是数字',
-        'employee_id.length' => '工号长度必须在4-50个字符之间',
-        'employee_id.alphaNum' => '工号只能是字母和数字',
-        'status.require' => '状态不能为空',
-        'status.in' => '状态只能是0或1',
+        'name.require' => '请输入姓名',
+        'name.length' => '姓名长度必须在2-50个字符之间',
+        'phone.require' => '请输入手机号码',
+        'phone.mobile' => '手机号码格式不正确',
+        'phone.unique' => '该手机号已被注册',
+        'password.require' => '请输入密码',
+        'password.length' => '密码长度必须在6-20个字符之间',
+        'store_id.number' => '门店ID必须是数字',
+        'employee_id.max' => '工号不能超过50个字符',
+        'code.length' => '微信授权码格式不正确',
+        'old_password.require' => '请输入原密码',
+        'old_password.length' => '原密码长度必须在6-20个字符之间',
+        'new_password.require' => '请输入新密码',
+        'new_password.length' => '新密码长度必须在6-20个字符之间',
     ];
 
     protected $scene = [
-        'create' => ['name', 'phone', 'store_id', 'employee_id'],
-        'update' => ['name', 'phone', 'store_id', 'employee_id'],
-        'status' => ['status'],
+        'register' => ['name', 'phone', 'password'],
+        'update_password' => ['old_password', 'new_password'],
+        'reset_password' => ['phone', 'code', 'new_password'],
     ];
 } 

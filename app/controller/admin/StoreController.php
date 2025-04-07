@@ -16,8 +16,8 @@ class StoreController
      */
     public function index(): Response
     {
-        $page = Request::param('page', 1);
-        $limit = Request::param('limit', 10);
+        $page = (int)Request::param('page', 1);
+        $limit = (int)Request::param('limit', 10);
         $keyword = Request::param('keyword', '');
 
         $query = Store::where('1=1');

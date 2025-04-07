@@ -10,10 +10,19 @@
 // +----------------------------------------------------------------------
 use think\facade\Route;
 
+Route::get('/', 'Index/index');
+
 // 登录相关路由
 Route::group('api/admin', function () {
+    // 添加GET请求的登录页面路由
+    Route::get('login', 'admin.LoginController/loginPage');
+    
+    // 原有的POST登录处理路由
     Route::post('login', 'admin.LoginController/login');
     Route::post('refresh_token', 'admin.LoginController/refreshToken');
+    
+    // 添加数据库连接测试路由
+    Route::get('test_db', 'admin.LoginController/testDbConnection');
 });
 
 // 需要登录验证的路由
@@ -36,11 +45,11 @@ Route::group('api/admin', function () {
     Route::put('admin/:id/status', 'admin.AdminController/updateStatus');
     
     // 销售记录管理
+    Route::get('sales/:id', 'admin.SalesController/detail');
     Route::get('sales', 'admin.SalesController/index');
     Route::post('sales', 'admin.SalesController/create');
     Route::put('sales/:id', 'admin.SalesController/update');
     Route::delete('sales/:id', 'admin.SalesController/delete');
-    Route::get('sales/:id', 'admin.SalesController/detail');
     
     // 门店管理
     Route::get('stores', 'admin.StoreController/index');
@@ -76,6 +85,29 @@ Route::group('api/admin', function () {
     // 文件上传
     Route::post('upload/image', 'admin.UploadController/uploadImage');
 })->middleware(\app\middleware\Auth::class);
+
+// 销售员认证相关路由
+Route::post('api/salesperson/register', 'SalespersonAuthController/register');
+Route::post('api/salesperson/login', 'SalespersonAuthController/login');
+
+// 需要认证的销售员接口
+Route::group('api/salesperson', function () {
+    // 密码相关
+    Route::put('password', 'SalespersonAuthController/updatePassword');
+    Route::post('password/reset', 'SalespersonAuthController/resetPassword');
+    
+    // 基础数据接口
+    Route::get('stores', 'SalespersonController/stores');
+    Route::get('phone_brands', 'SalespersonController/phoneBrands');
+    Route::get('phone_models', 'SalespersonController/phoneModels');
+
+    // 图片上传接口
+    Route::post('upload_images', 'SalespersonUploadController/uploadImages');
+    Route::post('delete_image', 'SalespersonUploadController/deleteImage');
+    
+    // 销售记录提交接口
+    Route::post('sales_submit', 'SalespersonController/submitSales');
+})->middleware(\app\middleware\SalespersonAuth::class);
 
 // API文档路由
 Route::get('api/docs', function() {

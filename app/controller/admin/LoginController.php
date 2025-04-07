@@ -8,6 +8,7 @@ use app\model\Admin;
 use jwt\JWT;
 use think\Request;
 use think\Response;
+use think\facade\Db;
 
 /**
  * 登录控制器
@@ -16,6 +17,45 @@ use think\Response;
  */
 class LoginController extends BaseController
 {
+    /**
+     * 登录页面（GET请求）
+     * 
+     * @return Response
+     */
+    public function loginPage(): Response
+    {
+        // 返回JSON提示，说明这是一个API接口
+        return json([
+            'code' => 0,
+            'msg' => '这是登录API接口，请使用POST方法传递username和password参数',
+            'data' => [
+                'method' => 'POST',
+                'params' => [
+                    'username' => '用户名',
+                    'password' => '密码'
+                ],
+                'example' => [
+                    'curl' => 'curl -X POST -H "Content-Type: application/json" -d \'{"username":"admin","password":"123456"}\' http://localhost:8082/api/admin/login',
+                    'response' => [
+                        'code' => 0,
+                        'msg' => '登录成功',
+                        'data' => [
+                            'access_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                            'refresh_token' => 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...',
+                            'user' => [
+                                'id' => 1,
+                                'username' => 'admin',
+                                'nickname' => '管理员',
+                                'avatar' => '/uploads/avatar/default.png',
+                                'role' => 'admin'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+    }
+
     /**
      * 管理员登录
      *
@@ -151,5 +191,74 @@ class LoginController extends BaseController
                 'updateTime' => $admin->update_time
             ]
         ]);
+    }
+
+    /**
+     * 测试数据库连接
+     *
+     * @return Response
+     */
+    public function testDbConnection(): Response
+    {
+        try {
+            // 尝试执行一个简单的SQL查询
+            $version = Db::query('SELECT VERSION() as version');
+            
+            // 获取数据库配置
+            $config = [
+                'type' => env('DB_TYPE', 'mysql'),
+                'host' => env('DB_HOST', '127.0.0.1'),
+                'name' => env('DB_NAME', 'mobile_backend'),
+                'user' => env('DB_USER', 'root'),
+                'pass' => env('DB_PASS', 'admin123'),
+                'port' => env('DB_PORT', 3306),
+                'charset' => env('DB_CHARSET', 'utf8')
+            ];
+            
+            // 获取数据库表信息
+            $tables = Db::query('SHOW TABLES');
+            $tableList = [];
+            foreach ($tables as $table) {
+                $tableList[] = reset($table);
+            }
+            
+            // 连接成功
+            return json([
+                'code' => 0,
+                'msg' => '数据库连接成功',
+                'data' => [
+                    'version' => $version[0]['version'],
+                    'config' => [
+                        'type' => $config['type'],
+                        'host' => $config['host'],
+                        'name' => $config['name'],
+                        'user' => $config['user'],
+                        'port' => $config['port'],
+                        'charset' => $config['charset']
+                    ],
+                    'tables' => $tableList,
+                    'php_version' => PHP_VERSION,
+                    'server_info' => [
+                        'os' => PHP_OS,
+                        'hostname' => gethostname()
+                    ]
+                ]
+            ]);
+        } catch (\Exception $e) {
+            // 连接失败
+            return json([
+                'code' => 1,
+                'msg' => '数据库连接失败',
+                'data' => [
+                    'error' => $e->getMessage(),
+                    'db_host' => env('DB_HOST', '127.0.0.1'),
+                    'php_version' => PHP_VERSION,
+                    'server_info' => [
+                        'os' => PHP_OS,
+                        'hostname' => gethostname()
+                    ]
+                ]
+            ]);
+        }
     }
 } 

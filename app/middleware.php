@@ -6,5 +6,8 @@ return [
     // 多语言加载
     // \think\middleware\LoadLangPack::class,
     // Session初始化
-    // \think\middleware\SessionInit::class
+    // \think\middleware\SessionInit::class,
+    
+    // 跨域请求处理
+    \app\middleware\Cors::class,
 ];

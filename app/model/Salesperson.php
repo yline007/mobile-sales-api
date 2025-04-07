@@ -1,5 +1,6 @@
 <?php
-declare (strict_types = 1);
+
+declare(strict_types=1);
 
 namespace app\model;
 
@@ -14,7 +15,7 @@ class Salesperson extends Model
 {
     // 设置表名
     protected $name = 'salesperson';
-    
+
     // 设置字段信息
     protected $schema = [
         'id'          => 'int',
@@ -22,14 +23,16 @@ class Salesperson extends Model
         'phone'       => 'string',
         'store_id'    => 'int',
         'employee_id' => 'string',
+        'password'    => 'string',
+        'salt'        => 'string',
         'status'      => 'int',
         'create_time' => 'datetime',
         'update_time' => 'datetime'
     ];
-    
+
     // 自动写入时间戳
     protected $autoWriteTimestamp = true;
-    
+
     /**
      * 关联门店
      * @return \think\model\relation\BelongsTo
@@ -38,7 +41,7 @@ class Salesperson extends Model
     {
         return $this->belongsTo(Store::class, 'store_id', 'id');
     }
-    
+
     /**
      * 关联销售记录
      * @return \think\model\relation\HasMany
@@ -47,4 +50,4 @@ class Salesperson extends Model
     {
         return $this->hasMany(Sales::class, 'salesperson_id', 'id');
     }
-} 
+}

@@ -40,7 +40,8 @@ class DashboardController extends BaseController
         $monthSalesAmount = 189650;
         
         return json([
-            'success' => true,
+            'code' => 0,
+            'msg' => 'success',
             'data' => [
                 'todaySalesCount' => $todaySalesCount,
                 'storeTotalCount' => $storeTotalCount,
@@ -101,7 +102,8 @@ class DashboardController extends BaseController
         }
         
         return json([
-            'success' => true,
+            'code' => 0,
+            'msg' => 'success',
             'data' => [
                 'labels' => $labels,
                 'data' => $data
@@ -129,7 +131,8 @@ class DashboardController extends BaseController
         }
         
         return json([
-            'success' => true,
+            'code' => 0,
+            'msg' => 'success',
             'data' => $data
         ]);
     }
@@ -153,7 +156,8 @@ class DashboardController extends BaseController
         }
         
         return json([
-            'success' => true,
+            'code' => 0,
+            'msg' => 'success',
             'data' => [
                 'labels' => $labels,
                 'data' => $data
@@ -193,7 +197,8 @@ class DashboardController extends BaseController
         }
         
         return json([
-            'success' => true,
+            'code' => 0,
+            'msg' => 'success',
             'data' => $data
         ]);
     }
