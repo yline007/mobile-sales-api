@@ -6,6 +6,7 @@ namespace app\controller;
 use app\model\{Sales, Store, PhoneBrand, PhoneModel};
 use think\facade\{Request, Cache};
 use think\{Response, exception\ValidateException};
+use app\service\NotificationService;
 
 class SalespersonController
 {
@@ -70,7 +71,7 @@ class SalespersonController
      * 提交销售记录
      * @return Response
      */
-    public function submitSales(): Response
+    public function salesSubmit(): Response
     {
         // 从请求中获取已登录的销售员信息
         $request = Request::instance();
@@ -138,6 +139,24 @@ class SalespersonController
 
         $sales = new Sales($data);
         if ($sales->save()) {
+            // 发送销售通知
+            try {
+                $notificationService = new NotificationService();
+                $notificationService->sendSalesNotification([
+                    'id' => $sales->id,
+                    'store_name' => $sales->store_name,
+                    'salesperson_name' => $sales->salesperson_name,
+                    'phone_brand_name' => $sales->phone_brand_name,
+                    'phone_model_name' => $sales->phone_model_name,
+                    'customer_name' => $sales->customer_name,
+                    'customer_phone' => $sales->customer_phone,
+                    'create_time' => $sales->create_time
+                ]);
+            } catch (\Exception $e) {
+                // 记录错误但不影响主流程
+                \think\facade\Log::error('发送销售通知失败：' . $e->getMessage());
+            }
+
             // 返回时将photo_url转换回数组
             $photoUrls = !empty($sales->photo_url) ? explode(',', $sales->photo_url) : [];
             
@@ -158,5 +177,62 @@ class SalespersonController
             ]);
         }
         return json(['code' => 1, 'msg' => '提交失败']);
+    }
+
+    /**
+     * 获取今日销售记录
+     * @return Response
+     */
+    public function todaySales(): Response
+    {
+        // 从请求中获取已登录的销售员信息
+        $request = Request::instance();
+        if (!isset($request->salesperson)) {
+            return json(['code' => 1, 'msg' => '获取销售员信息失败']);
+        }
+        $salesperson = $request->salesperson;
+
+        // 获取今日开始和结束时间
+        $today = date('Y-m-d');
+        $startTime = $today . ' 00:00:00';
+        $endTime = $today . ' 23:59:59';
+
+        try {
+            // 查询今日销售记录
+            $sales = Sales::where('salesperson_id', $salesperson->id)
+                ->whereTime('create_time', 'between', [$startTime, $endTime])
+                ->order('create_time', 'desc')
+                ->select()
+                ->map(function ($item) {
+                    // 处理图片URL
+                    $photoUrls = !empty($item->photo_url) ? explode(',', $item->photo_url) : [];
+                    
+                    return [
+                        'id' => $item->id,
+                        'store_name' => $item->store_name,
+                        'phone_brand_name' => $item->phone_brand_name,
+                        'phone_model_name' => $item->phone_model_name,
+                        'imei' => $item->imei,
+                        'customer_name' => $item->customer_name,
+                        'customer_phone' => $item->customer_phone,
+                        'photo_url' => $photoUrls,
+                        'remark' => $item->remark,
+                        'create_time' => $item->create_time
+                    ];
+                });
+
+            return json([
+                'code' => 0,
+                'msg' => 'success',
+                'data' => [
+                    'total' => count($sales),
+                    'list' => $sales
+                ]
+            ]);
+        } catch (\Exception $e) {
+            // 记录错误日志
+            \think\facade\Log::error('获取销售记录失败：' . $e->getMessage());
+            return json(['code' => 1, 'msg' => '获取销售记录失败，请稍后重试']);
+        }
     }
 } 

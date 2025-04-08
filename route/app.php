@@ -14,41 +14,33 @@ Route::get('/', 'Index/index');
 
 // 登录相关路由
 Route::group('api/admin', function () {
-    // 添加GET请求的登录页面路由
-    Route::get('login', 'admin.LoginController/loginPage');
-    
     // 原有的POST登录处理路由
     Route::post('login', 'admin.LoginController/login');
     Route::post('refresh_token', 'admin.LoginController/refreshToken');
     
-    // 添加数据库连接测试路由
-    Route::get('test_db', 'admin.LoginController/testDbConnection');
 });
 
 // 需要登录验证的路由
 Route::group('api/admin', function () {
     // 获取管理员信息
     Route::get('info', 'admin.LoginController/getInfo');
-    
-    // 仪表盘数据
-    Route::get('statistics', 'admin.DashboardController/statistics');
-    Route::get('sales_trend', 'admin.DashboardController/salesTrend');
-    Route::get('brand_statistics', 'admin.DashboardController/brandStatistics');
-    Route::get('store_statistics', 'admin.DashboardController/storeStatistics');
-    Route::get('latest_sales', 'admin.DashboardController/latestSalesRecords');
+
+     // 仪表盘相关路由
+     Route::get('dashboard/statistics', 'admin.DashboardController/statistics');
+     Route::get('dashboard/brand_statistics', 'admin.DashboardController/brandStatistics');
+     Route::get('dashboard/daily_sales', 'admin.DashboardController/dailySalesStatistics');
     
     // 管理员管理
     Route::get('admins', 'admin.AdminController/index');
     Route::post('admin', 'admin.AdminController/create');
+    Route::put('admin/:id/status', 'admin.AdminController/updateStatus');
     Route::put('admin/:id', 'admin.AdminController/update');
     Route::delete('admin/:id', 'admin.AdminController/delete');
-    Route::put('admin/:id/status', 'admin.AdminController/updateStatus');
+    Route::post('password/update', 'admin.AdminController/updatePassword');
     
     // 销售记录管理
     Route::get('sales/:id', 'admin.SalesController/detail');
     Route::get('sales', 'admin.SalesController/index');
-    Route::post('sales', 'admin.SalesController/create');
-    Route::put('sales/:id', 'admin.SalesController/update');
     Route::delete('sales/:id', 'admin.SalesController/delete');
     
     // 门店管理
@@ -60,18 +52,10 @@ Route::group('api/admin', function () {
     
     // 销售员管理
     Route::get('salespersons', 'admin.SalespersonController/index');
-    Route::post('salesperson', 'admin.SalespersonController/create');
-    Route::put('salesperson/:id', 'admin.SalespersonController/update');
-    Route::delete('salesperson/:id', 'admin.SalespersonController/delete');
     Route::put('salesperson/:id/status', 'admin.SalespersonController/updateStatus');
     
     // 手机品牌和型号管理
     Route::get('phone_brands', 'admin.PhoneBrandController/index');
-    Route::post('phone_brand', 'admin.PhoneBrandController/create');
-    Route::put('phone_brand/:id', 'admin.PhoneBrandController/update');
-    Route::delete('phone_brand/:id', 'admin.PhoneBrandController/delete');
-    Route::put('phone_brand/:id/status', 'admin.PhoneBrandController/updateStatus');
-    
     Route::get('phone_models', 'admin.PhoneModelController/index');
     Route::post('phone_model', 'admin.PhoneModelController/create');
     Route::put('phone_model/:id', 'admin.PhoneModelController/update');
@@ -82,8 +66,6 @@ Route::group('api/admin', function () {
     Route::get('settings', 'admin.SystemSettingController/getSettings');
     Route::post('settings', 'admin.SystemSettingController/updateSettings');
     
-    // 文件上传
-    Route::post('upload/image', 'admin.UploadController/uploadImage');
 })->middleware(\app\middleware\Auth::class);
 
 // 销售员认证相关路由
@@ -106,10 +88,21 @@ Route::group('api/salesperson', function () {
     Route::post('delete_image', 'SalespersonUploadController/deleteImage');
     
     // 销售记录提交接口
-    Route::post('sales_submit', 'SalespersonController/submitSales');
+    Route::post('sales_submit', 'SalespersonController/salesSubmit');
+    // 获取今日销售记录
+    Route::get('today_sales', 'SalespersonController/todaySales');
+
+    // 销售信息修改
+    Route::put('update_profile', 'SalespersonAuthController/updateProfile');
+    
 })->middleware(\app\middleware\SalespersonAuth::class);
 
 // API文档路由
 Route::get('api/docs', function() {
     return redirect('/docs/index.html');
+});
+
+// 测试接口路由
+Route::group('api', function () {
+    Route::post('test/notification', 'TestController/sendTestNotification');
 });

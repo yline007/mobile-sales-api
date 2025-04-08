@@ -141,11 +141,10 @@ class SalespersonAuthController
             return json(['code' => 1, 'msg' => '请先登录']);
         }
 
-        $data = Request::only(['old_password', 'new_password']);
+        $data = Request::only(['old_password', 'new_password', 'confirm_password']);
 
         try {
-            validate(\app\validate\Salesperson::class)
-                ->scene('update_password')
+            validate(\app\validate\UpdatePassword::class)
                 ->check($data);
         } catch (ValidateException $e) {
             return json(['code' => 1, 'msg' => $e->getMessage()]);
@@ -165,9 +164,34 @@ class SalespersonAuthController
         $salesperson->salt = bin2hex($salt);
 
         if ($salesperson->save()) {
-            return json(['code' => 0, 'msg' => '密码修改成功']);
+            // 清除该用户的所有登录状态（可选）
+            $this->clearUserTokens($salesperson->id);
+            
+            return json([
+                'code' => 0, 
+                'msg' => '密码修改成功，请重新登录',
+                'data' => null
+            ]);
         }
-        return json(['code' => 1, 'msg' => '密码修改失败']);
+        
+        return json(['code' => 1, 'msg' => '密码修改失败，请稍后重试']);
+    }
+
+    /**
+     * 清除用户的所有登录状态
+     * @param int $userId
+     */
+    private function clearUserTokens(int $userId): void
+    {
+        try {
+            // 这里可以根据实际的token存储方式来清除
+            // 如果使用Redis存储token，可以删除对应的token
+            $key = 'user_token_' . $userId;
+            Cache::delete($key);
+        } catch (\Exception $e) {
+            // 记录日志但不影响主流程
+            \think\facade\Log::error('清除用户token失败：' . $e->getMessage());
+        }
     }
 
     /**
@@ -270,5 +294,59 @@ class SalespersonAuthController
             return true;
         }
         return false;
+    }
+
+    /**
+     * 修改个人信息
+     * @return Response
+     */
+    public function updateProfile(): Response
+    {
+        // 获取当前登录用户
+        $salesperson = $this->getCurrentSalesperson();
+        if (!$salesperson) {
+            return json(['code' => 1, 'msg' => '请先登录']);
+        }
+
+        $data = Request::only(['name', 'phone']);
+
+        try {
+            validate(\app\validate\UpdateProfile::class)
+                ->check($data);
+        } catch (ValidateException $e) {
+            return json(['code' => 1, 'msg' => $e->getMessage()]);
+        }
+
+        // 如果修改了手机号，需要验证新手机号是否已被注册
+        if ($data['phone'] !== $salesperson->phone) {
+            // 检查新手机号是否已被其他人使用
+            $exists = Salesperson::where('phone', $data['phone'])
+                ->where('id', '<>', $salesperson->id)
+                ->find();
+            
+            if ($exists) {
+                return json(['code' => 1, 'msg' => '该手机号已被其他账号使用']);
+            }
+        }
+
+        // 更新个人信息
+        $salesperson->name = $data['name'];
+        $salesperson->phone = $data['phone'];
+
+        if ($salesperson->save()) {
+            return json([
+                'code' => 0,
+                'msg' => '个人信息修改成功',
+                'data' => [
+                    'id' => $salesperson->id,
+                    'name' => $salesperson->name,
+                    'phone' => $salesperson->phone,
+                    'store_id' => $salesperson->store_id,
+                    'employee_id' => $salesperson->employee_id
+                ]
+            ]);
+        }
+
+        return json(['code' => 1, 'msg' => '修改失败，请稍后重试']);
     }
 }

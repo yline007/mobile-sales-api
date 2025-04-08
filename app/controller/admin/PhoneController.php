@@ -37,75 +37,7 @@ class PhoneController
             ]
         ]);
     }
-
-    /**
-     * 创建手机品牌
-     * @return Response
-     */
-    public function createBrand(): Response
-    {
-        $data = Request::only(['name', 'logo']);
-        
-        // 验证品牌名称是否已存在
-        if (PhoneBrand::where('name', $data['name'])->find()) {
-            return json(['code' => 1, 'msg' => '品牌名称已存在']);
-        }
-
-        $brand = new PhoneBrand($data);
-        if ($brand->save()) {
-            return json(['code' => 0, 'msg' => '创建成功']);
-        }
-        return json(['code' => 1, 'msg' => '创建失败']);
-    }
-
-    /**
-     * 更新手机品牌
-     * @param int $id
-     * @return Response
-     */
-    public function updateBrand(int $id): Response
-    {
-        $data = Request::only(['name', 'logo']);
-        
-        $brand = PhoneBrand::find($id);
-        if (!$brand) {
-            return json(['code' => 1, 'msg' => '品牌不存在']);
-        }
-
-        // 如果修改了品牌名称，需要验证新的名称是否已存在
-        if ($data['name'] !== $brand->name && PhoneBrand::where('name', $data['name'])->find()) {
-            return json(['code' => 1, 'msg' => '品牌名称已存在']);
-        }
-
-        if ($brand->save($data)) {
-            return json(['code' => 0, 'msg' => '更新成功']);
-        }
-        return json(['code' => 1, 'msg' => '更新失败']);
-    }
-
-    /**
-     * 删除手机品牌
-     * @param int $id
-     * @return Response
-     */
-    public function deleteBrand(int $id): Response
-    {
-        $brand = PhoneBrand::find($id);
-        if (!$brand) {
-            return json(['code' => 1, 'msg' => '品牌不存在']);
-        }
-
-        // 检查品牌是否有关联的型号
-        if ($brand->models()->count() > 0) {
-            return json(['code' => 1, 'msg' => '该品牌存在手机型号，无法删除']);
-        }
-
-        if ($brand->delete()) {
-            return json(['code' => 0, 'msg' => '删除成功']);
-        }
-        return json(['code' => 1, 'msg' => '删除失败']);
-    }
-
+    
     /**
      * 获取手机型号列表
      * @return Response

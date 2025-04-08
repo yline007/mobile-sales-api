@@ -16,17 +16,17 @@ class SalespersonController
      */
     public function index(): Response
     {
-        $page = Request::param('page', 1);
-        $limit = Request::param('limit', 10);
+        $page = (int)Request::param('page', 1);
+        $limit = (int)Request::param('limit', 10);
         $keyword = Request::param('keyword', '');
-        $store_id = Request::param('store_id', '');
+        $store_id = (int)Request::param('store_id', 0);
 
         $query = Salesperson::with(['store']);
         
         if (!empty($keyword)) {
             $query->where('name|phone|employee_id', 'like', "%{$keyword}%");
         }
-        if (!empty($store_id)) {
+        if ($store_id > 0) {
             $query->where('store_id', $store_id);
         }
 
@@ -42,92 +42,7 @@ class SalespersonController
             ]
         ]);
     }
-
-    /**
-     * 创建销售员
-     * @return Response
-     */
-    public function create(): Response
-    {
-        $data = Request::only(['name', 'phone', 'store_id', 'employee_id']);
-        
-        try {
-            validate(\app\validate\Salesperson::class)
-                ->scene('create')
-                ->check($data);
-        } catch (ValidateException $e) {
-            return json(['code' => 1, 'msg' => $e->getMessage()]);
-        }
-
-        // 验证工号是否已存在
-        if (!empty($data['employee_id']) && Salesperson::where('employee_id', $data['employee_id'])->find()) {
-            return json(['code' => 1, 'msg' => '工号已存在']);
-        }
-
-        $salesperson = new Salesperson($data);
-        if ($salesperson->save()) {
-            return json(['code' => 0, 'msg' => '创建成功']);
-        }
-        return json(['code' => 1, 'msg' => '创建失败']);
-    }
-
-    /**
-     * 更新销售员信息
-     * @param int $id
-     * @return Response
-     */
-    public function update(int $id): Response
-    {
-        $data = Request::only(['name', 'phone', 'store_id', 'employee_id']);
-        
-        try {
-            validate(\app\validate\Salesperson::class)
-                ->scene('update')
-                ->check($data);
-        } catch (ValidateException $e) {
-            return json(['code' => 1, 'msg' => $e->getMessage()]);
-        }
-
-        $salesperson = Salesperson::find($id);
-        if (!$salesperson) {
-            return json(['code' => 1, 'msg' => '销售员不存在']);
-        }
-
-        // 如果修改了工号，需要验证新的工号是否已存在
-        if (!empty($data['employee_id']) && $data['employee_id'] !== $salesperson->employee_id && 
-            Salesperson::where('employee_id', $data['employee_id'])->find()) {
-            return json(['code' => 1, 'msg' => '工号已存在']);
-        }
-
-        if ($salesperson->save($data)) {
-            return json(['code' => 0, 'msg' => '更新成功']);
-        }
-        return json(['code' => 1, 'msg' => '更新失败']);
-    }
-
-    /**
-     * 删除销售员
-     * @param int $id
-     * @return Response
-     */
-    public function delete(int $id): Response
-    {
-        $salesperson = Salesperson::find($id);
-        if (!$salesperson) {
-            return json(['code' => 1, 'msg' => '销售员不存在']);
-        }
-
-        // 检查销售员是否有关联的销售记录
-        if ($salesperson->sales()->count() > 0) {
-            return json(['code' => 1, 'msg' => '该销售员存在销售记录，无法删除']);
-        }
-
-        if ($salesperson->delete()) {
-            return json(['code' => 0, 'msg' => '删除成功']);
-        }
-        return json(['code' => 1, 'msg' => '删除失败']);
-    }
-
+    
     /**
      * 更新销售员状态
      * @param int $id
@@ -135,14 +50,13 @@ class SalespersonController
      */
     public function updateStatus(int $id): Response
     {
-        $data = ['status' => Request::param('status')];
-        
-        try {
-            validate(\app\validate\Salesperson::class)
-                ->scene('status')
-                ->check($data);
-        } catch (ValidateException $e) {
-            return json(['code' => 1, 'msg' => $e->getMessage()]);
+        if ($id <= 0) {
+            return json(['code' => 1, 'msg' => '无效的销售员ID']);
+        }
+
+        $status = (int)Request::param('status');
+        if (!in_array($status, [0, 1])) {
+            return json(['code' => 1, 'msg' => '状态值只能是0或1']);
         }
 
         $salesperson = Salesperson::find($id);
@@ -150,7 +64,7 @@ class SalespersonController
             return json(['code' => 1, 'msg' => '销售员不存在']);
         }
 
-        $salesperson->status = $data['status'];
+        $salesperson->status = $status;
         if ($salesperson->save()) {
             return json(['code' => 0, 'msg' => '状态更新成功']);
         }

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WebSocket测试页面</title>
+    <style>
+        .message-box {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            height: 300px;
+            overflow-y: auto;
+        }
+        .notification {
+            margin: 5px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .info {
+            background-color: #d9edf7;
+            color: #31708f;
+        }
+    </style>
+</head>
+<body>
+    <h2>WebSocket测试页面</h2>
+    
+    <div>
+        <button onclick="connectWebSocket()">连接WebSocket</button>
+        <button onclick="disconnectWebSocket()">断开连接</button>
+    </div>
+
+    <h3>连接状态：<span id="status">未连接</span></h3>
+    
+    <h3>测试发送销售通知</h3>
+    <button onclick="sendTestNotification()">发送测试通知</button>
+    
+    <h3>接收到的消息：</h3>
+    <div id="messageBox" class="message-box"></div>
+
+    <script>
+        let ws = null;
+        let reconnectTimer = null;
+        const maxReconnectAttempts = 5;
+        let reconnectAttempts = 0;
+        
+        function addMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `notification ${type}`;
+            
+            if (typeof message === 'object') {
+                messageDiv.textContent = JSON.stringify(message, null, 2);
+            } else {
+                messageDiv.textContent = message;
+            }
+            
+            messageBox.appendChild(messageDiv);
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+        
+        function connectWebSocket() {
+            try {
+                // 使用当前域名和端口8085
+                const wsUrl = 'ws://' + window.location.hostname + ':8085';
+                console.log('正在连接到:', wsUrl);
+                addMessage('正在连接到 ' + wsUrl, 'info');
+                
+                if (ws) {
+                    console.log('关闭现有连接');
+                    ws.close();
+                }
+                
+                ws = new WebSocket(wsUrl);
+                
+                ws.onopen = function() {
+                    console.log('WebSocket连接成功');
+                    document.getElementById('status').textContent = '已连接';
+                    document.getElementById('status').style.color = 'green';
+                    addMessage('WebSocket连接成功', 'success');
+                    reconnectAttempts = 0;
+                    
+                    // 发送绑定请求
+                    const bindData = {
+                        type: 'bind',
+                        admin_id: 1  // 测试用管理员ID
+                    };
+                    console.log('发送绑定请求:', bindData);
+                    addMessage('发送绑定请求: ' + JSON.stringify(bindData), 'info');
+                    ws.send(JSON.stringify(bindData));
+                };
+                
+                ws.onmessage = function(e) {
+                    console.log('收到消息:', e.data);
+                    addMessage('收到消息: ' + e.data, 'success');
+                    
+                    try {
+                        const data = JSON.parse(e.data);
+                        if (data.type === 'bind' && data.status === 'success') {
+                            console.log('管理员绑定成功');
+                            addMessage('管理员绑定成功', 'success');
+                        }
+                    } catch (error) {
+                        console.error('解析消息失败:', error);
+                        addMessage('解析消息失败: ' + error.message, 'error');
+                    }
+                };
+                
+                ws.onclose = function(e) {
+                    console.log('WebSocket连接关闭:', e);
+                    document.getElementById('status').textContent = '已断开';
+                    document.getElementById('status').style.color = 'red';
+                    addMessage('WebSocket连接关闭: ' + (e.reason || '未知原因'), 'error');
+                    
+                    // 尝试重连
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        console.log('准备重连...');
+                        reconnectTimer = setTimeout(connectWebSocket, 3000);
+                        reconnectAttempts++;
+                        addMessage(`将在3秒后尝试重连 (${reconnectAttempts}/${maxReconnectAttempts})`, 'info');
+                    }
+                };
+                
+                ws.onerror = function(error) {
+                    console.error('WebSocket错误:', error);
+                    document.getElementById('status').textContent = '连接错误';
+                    document.getElementById('status').style.color = 'red';
+                    addMessage('WebSocket错误: ' + (error.message || '未知错误'), 'error');
+                };
+                
+            } catch (error) {
+                console.error('连接失败:', error);
+                addMessage('连接失败: ' + error.message, 'error');
+                document.getElementById('status').textContent = '连接失败';
+                document.getElementById('status').style.color = 'red';
+            }
+        }
+        
+        function disconnectWebSocket() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+            if (reconnectTimer) {
+                clearTimeout(reconnectTimer);
+                reconnectTimer = null;
+            }
+            reconnectAttempts = 0;
+            addMessage('手动断开连接', 'info');
+        }
+        
+        function sendTestNotification() {
+            // 模拟销售通知数据
+            const testData = {
+                id: 1001,
+                store_name: '测试店铺',
+                salesperson_name: '测试销售员',
+                phone_brand_name: '测试品牌',
+                phone_model_name: '测试型号',
+                customer_name: '测试客户',
+                customer_phone: '13800138000',
+                create_time: new Date().toISOString()
+            };
+            
+            addMessage('正在发送测试通知...', 'info');
+            addMessage('发送数据: ' + JSON.stringify(testData, null, 2), 'info');
+            
+            // 使用fetch发送POST请求到Redis通知服务
+            fetch('/api/test/notification', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(testData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('测试通知发送成功:', data);
+                addMessage('测试通知发送成功: ' + JSON.stringify(data, null, 2), 'success');
+            })
+            .catch(error => {
+                console.error('测试通知发送失败:', error);
+                addMessage('测试通知发送失败: ' + error.message, 'error');
+            });
+        }
+    </script>
+</body>
+</html> 

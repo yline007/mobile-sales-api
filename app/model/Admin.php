@@ -39,7 +39,17 @@ class Admin extends Model
      */
     public function setPasswordAttr(string $value): string
     {
-        return md5($value);
+        return password_hash($value, PASSWORD_DEFAULT);
+    }
+    
+    /**
+     * 验证密码
+     * @param string $password
+     * @return bool
+     */
+    public function verifyPassword(string $password): bool
+    {
+        return password_verify($password, $this->password);
     }
     
     /**
