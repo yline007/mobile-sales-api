@@ -117,8 +117,8 @@ CREATE TABLE IF NOT EXISTS `system_setting` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统设置表';
 
 -- 添加超级管理员账号 (使用password_hash加密  初始密码: admin123)
-INSERT INTO `admin` (`username``password``nickname``role`) VALUES
-('admin''$2y$10$SImzMOYYfb0XYkHTonYw5u4R05R5ytQsAqIPfUt0p6FJXVSWLj1b.''超级管理员''super-admin');
+INSERT INTO `admin` (`username`,`password`,`nickname`,`role`) VALUES
+('admin','$2y$10$SImzMOYYfb0XYkHTonYw5u4R05R5ytQsAqIPfUt0p6FJXVSWLj1b.','超级管理员','super-admin');
 
 -- 初始化手机品牌数据
 INSERT INTO `phone_brand` (`name`) VALUES
