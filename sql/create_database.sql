@@ -13,7 +13,7 @@ CREATE TABLE `admin` (
   `avatar` varchar(255) DEFAULT NULL COMMENT '头像URL',
   `email` varchar(100) DEFAULT NULL COMMENT '邮箱',
   `status` tinyint(1) NOT NULL DEFAULT '1' COMMENT '状态 1-启用 0-禁用',
-  `role` varchar(20) NOT NULL DEFAULT 'admin' COMMENT '角色 super-admin/admin',
+  `role` varchar(20) NOT NULL DEFAULT 'admin' COMMENT '角色 super-adminadmin',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
@@ -117,32 +117,35 @@ CREATE TABLE IF NOT EXISTS `system_setting` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统设置表';
 
 -- 添加超级管理员账号 (使用password_hash加密  初始密码: admin123)
-INSERT INTO `admin` (`username`, `password`, `nickname`, `role`) VALUES
-('admin', '$2y$10$SImzMOYYfb0XYkHTonYw5u4R05R5ytQsAqIPfUt0p6FJXVSWLj1b.', '超级管理员', 'super-admin');
+INSERT INTO `admin` (`username``password``nickname``role`) VALUES
+('admin''$2y$10$SImzMOYYfb0XYkHTonYw5u4R05R5ytQsAqIPfUt0p6FJXVSWLj1b.''超级管理员''super-admin');
 
 -- 初始化手机品牌数据
-INSERT INTO `phone_brand` (`name`, `logo`) VALUES
-('苹果 (Apple)', '/uploads/brands/apple.png'),
-('三星 (Samsung)', '/uploads/brands/samsung.png'),
-('华为 (Huawei)', '/uploads/brands/huawei.png'),
-('小米 (Xiaomi)', '/uploads/brands/xiaomi.png'),
-('OPPO', '/uploads/brands/oppo.png'),
-('VIVO', '/uploads/brands/vivo.png'),
-('一加 (OnePlus)', '/uploads/brands/oneplus.png'),
-('荣耀 (Honor)', '/uploads/brands/honor.png'),
-('魅族 (MEIZU)', '/uploads/brands/honor.png'),
-('联想 (Lenovo)', '/uploads/brands/honor.png'),
-('真我 (realme)', '/uploads/brands/honor.png'),
-('坚果 (Smartisan)', '/uploads/brands/smartisan.png'),
-('360手机', '/uploads/brands/360.png'),
-('华硕 (ASUS)', '/uploads/brands/360.png'),
-('谷歌 (Google) Pixel', '/uploads/brands/google.png'),
-('索尼 (Sony)', '/uploads/brands/sony.png'),
-('诺基亚 (Nokia)', '/uploads/brands/nokia.png'),
-('摩托罗拉 (Motorola)', '/uploads/brands/motorola.png'),
-('LG', '/uploads/brands/lg.png'),
-('松下 (Panasonic)', '/uploads/brands/panasonic.png'),
-('夏普 (Sharp)', '/uploads/brands/sharp.png'),
-('飞利浦 (Philips)', '/uploads/brands/philips.png'),
-('其它', '');
+INSERT INTO `phone_brand` (`name`) VALUES
+('苹果 (Apple)'),
+('三星 (Samsung)'),
+('华为 (Huawei)'),
+('小米 (Xiaomi)'),
+('OPPO'),
+('VIVO'),
+('一加 (OnePlus)'),
+('荣耀 (Honor)'),
+('魅族 (MEIZU)'),
+('联想 (Lenovo)'),
+('真我 (realme)'),
+('坚果 (Smartisan)'),
+('360手机'),
+('华硕 (ASUS)'),
+('谷歌 (Google) Pixel'),
+('索尼 (Sony)'),
+('诺基亚 (Nokia)'),
+('摩托罗拉 (Motorola)'),
+('LG'),
+('松下 (Panasonic)'),
+('夏普 (Sharp)'),
+('飞利浦 (Philips)'),
+('努比亚 (nubia)'),
+('黑鲨 (Black Shark)'),
+('酷派 (Coolpad)'),
+('其它');
 

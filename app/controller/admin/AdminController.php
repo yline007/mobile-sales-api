@@ -20,7 +20,8 @@ class AdminController
         $limit = (int)Request::param('limit', 10);
         $keyword = Request::param('keyword', '');
 
-        $query = Admin::where('1=1');
+        $query = Admin::where('1=1')
+                      ->where('username', '<>', 'admin'); // 排除用户名为'admin'的账号
         if (!empty($keyword)) {
             $query->where('username|nickname|email', 'like', "%{$keyword}%");
         }
