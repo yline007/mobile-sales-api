@@ -21,6 +21,7 @@ class PhoneModel extends Model
         'brand_id'    => 'int',
         'name'        => 'string',
         'image'       => 'string',
+        'price'       => 'float',
         'status'      => 'int',
         'create_time' => 'datetime',
         'update_time' => 'datetime'

@@ -37,6 +37,12 @@ class SalespersonController
             ->field(['id', 'name', 'logo as logo_url'])
             ->select();
 
+        // 将name等于'其它'的项排在最后
+        $brands = $brands->toArray();
+        usort($brands, function($a, $b) {
+            return $a['name'] === '其它' ? 1 : ($b['name'] === '其它' ? -1 : 0);
+        });
+
         return json([
             'code' => 0,
             'msg' => 'success',

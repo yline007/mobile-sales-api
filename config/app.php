@@ -13,6 +13,12 @@ return [
     // 默认时区
     'default_timezone' => 'Asia/Shanghai',
 
+    // 静态资源上传目录
+    'public_static_path' => public_path() . 'static' . DIRECTORY_SEPARATOR,
+    
+    // 允许访问的静态资源类型
+    'static_ext'       => 'css,js,png,jpg,jpeg,gif,svg,eot,ttf,woff,woff2,mp3',
+    
     // 应用映射（自动多应用模式有效）
     'app_map'          => [],
     // 域名绑定（自动多应用模式有效）

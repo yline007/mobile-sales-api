@@ -55,12 +55,12 @@ Route::group('api/admin', function () {
     Route::put('salesperson/:id/status', 'admin.SalespersonController/updateStatus');
     
     // 手机品牌和型号管理
-    Route::get('phone_brands', 'admin.PhoneBrandController/index');
-    Route::get('phone_models', 'admin.PhoneModelController/index');
-    Route::post('phone_model', 'admin.PhoneModelController/create');
-    Route::put('phone_model/:id', 'admin.PhoneModelController/update');
-    Route::delete('phone_model/:id', 'admin.PhoneModelController/delete');
-    Route::put('phone_model/:id/status', 'admin.PhoneModelController/updateStatus');
+    Route::get('phone_brands', 'admin.PhoneController/brandList');
+    Route::get('phone_models', 'admin.PhoneController/modelList');
+    Route::post('phone_model', 'admin.PhoneController/createModel');
+    Route::put('phone_model/:id/status', 'admin.PhoneController/updateStatus');
+    Route::put('phone_model/:id', 'admin.PhoneController/updateModel');
+    Route::delete('phone_model/:id', 'admin.PhoneController/deleteModel');
     
     // 系统设置
     Route::get('settings', 'admin.SystemSettingController/getSettings');
