@@ -16,9 +16,9 @@ class SalespersonUploadController {
     public function uploadImages(): Response {
         // 获取上传的文件
         $files = Request::file('images');
-        if (empty($files)) {
-            return json(['code' => 1, 'msg' => '请选择要上传的图片']);
-        }
+        // if (empty($files)) {
+        //     return json(['code' => 1, 'msg' => '请选择要上传的图片']);
+        // }
 
         // 如果是单个文件，转换为数组
         if (!is_array($files)) {
