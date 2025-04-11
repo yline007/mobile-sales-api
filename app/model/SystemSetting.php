@@ -50,7 +50,7 @@ class SystemSetting extends Model
      * @param string $remark 备注
      * @return bool
      */
-    public static function setSettingValue(string $key, $value, string $remark = null): bool
+    public static function setSettingValue(string $key, $value, ?string $remark = null): bool
     {
         $setting = self::where('key', $key)->find();
         if (!$setting) {
