@@ -39,9 +39,10 @@ Route::group('api/admin', function () {
     Route::post('password/update', 'admin.AdminController/updatePassword');
     
     // 销售记录管理
-    Route::get('sales/:id', 'admin.SalesController/detail');
-    Route::get('sales', 'admin.SalesController/index');
-    Route::delete('sales/:id', 'admin.SalesController/delete');
+    Route::get('sales/export$', 'admin.SalesController/export');
+    Route::get('sales/detail/:id$', 'admin.SalesController/detail');
+    Route::delete('sales/delete/:id$', 'admin.SalesController/delete');
+    Route::get('sales/list$', 'admin.SalesController/index');
     
     // 门店管理
     Route::get('stores', 'admin.StoreController/index');

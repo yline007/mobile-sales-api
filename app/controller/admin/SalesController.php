@@ -18,7 +18,6 @@ class SalesController {
         $page = (int)Request::param('page', 1);
         $limit = (int)Request::param('limit', 10);
         $keyword = Request::param('keyword', '');
-        $store_id = Request::param('store_id', '');
         $start_date = Request::param('start_date', '');
         $end_date = Request::param('end_date', '');
 
@@ -27,13 +26,15 @@ class SalesController {
         if (!empty($keyword)) {
             $query->where('customer_name|customer_phone|imei', 'like', "%{$keyword}%");
         }
-        if (!empty($store_id)) {
-            $query->where('store_id', $store_id);
-        }
+    
         if (!empty($start_date)) {
+            // 确保开始时间格式为 YYYY-MM-DD 00:00:00
+            $start_date = date('Y-m-d 00:00:00', strtotime($start_date));
             $query->whereTime('create_time', '>=', $start_date);
         }
         if (!empty($end_date)) {
+            // 确保结束时间格式为 YYYY-MM-DD 23:59:59
+            $end_date = date('Y-m-d 23:59:59', strtotime($end_date));
             $query->whereTime('create_time', '<=', $end_date);
         }
 
@@ -117,5 +118,73 @@ class SalesController {
             'msg' => 'success',
             'data' => $detailData
         ]);
+    }
+
+    /**
+     * 导出销售记录为CSV
+     * @return Response
+     */
+    public function export(): Response {
+        $keyword = Request::param('keyword', '');
+        $start_date = Request::param('start_date', '');
+        $end_date = Request::param('end_date', '');
+
+        $query = Sales::with(['store', 'salesperson', 'phoneBrand', 'phoneModel']);
+
+        if (!empty($keyword)) {
+            $query->where('customer_name|customer_phone|imei', 'like', "%{$keyword}%");
+        }
+        if (!empty($start_date)) {
+            // 确保开始时间格式为 YYYY-MM-DD 00:00:00
+            $start_date = date('Y-m-d 00:00:00', strtotime($start_date));
+            $query->whereTime('create_time', '>=', $start_date);
+        }
+        if (!empty($end_date)) {
+            // 确保结束时间格式为 YYYY-MM-DD 23:59:59
+            $end_date = date('Y-m-d 23:59:59', strtotime($end_date));
+            $query->whereTime('create_time', '<=', $end_date);
+        }
+
+        $list = $query->order('create_time', 'desc')->select();
+
+        // 设置CSV头部
+        $headers = ['门店', '销售员', '手机品牌', '手机型号', 'IMEI', '客户姓名', '客户电话', '创建时间'];
+        
+        // 开始输出CSV
+        ob_start();
+        $output = fopen('php://output', 'w');
+        
+        // 添加BOM头，解决中文乱码问题
+        fwrite($output, chr(0xEF).chr(0xBB).chr(0xBF));
+        
+        // 写入表头
+        fputcsv($output, $headers);
+        
+        // 写入数据
+        foreach ($list as $item) {
+            $row = [
+                $item->store ? $item->store->name : $item->store_name,
+                $item->salesperson ? $item->salesperson->name : $item->salesperson_name,
+                $item->phoneBrand ? $item->phoneBrand->name : $item->phone_brand_name,
+                $item->phoneModel ? $item->phoneModel->name : $item->phone_model_name,
+                $item->imei,
+                $item->customer_name,
+                $item->customer_phone,
+                $item->create_time
+            ];
+            fputcsv($output, $row);
+        }
+        
+        fclose($output);
+        $content = ob_get_clean();
+
+        // 设置响应头
+        $filename = '销售记录_' . date('YmdHis') . '.csv';
+        return Response::create($content)
+            ->header([
+                'Content-Type' => 'text/csv; charset=utf-8',
+                'Content-Disposition' => 'attachment;filename="' . $filename . '"',
+                'Cache-Control' => 'max-age=0'
+            ]);
     }
 }
